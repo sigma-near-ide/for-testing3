@@ -1,0 +1,38 @@
+name: Build Contract
+concurrency: build-contract-${{ github.ref }}
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: 'npm'
+          cache-dependency-path: contract/package-lock.json
+
+      - name: Initialize
+        run: |
+          cd contract
+          npm ci
+        shell: bash
+
+      - name: Build
+        run: |
+          cd contract
+          npm run build
+
+      - name: Publish
+        uses: actions/upload-artifact@v3
+        with:
+          name: Contract
+          path: contract/build/contract.wasm
+          if-no-files-found: error
